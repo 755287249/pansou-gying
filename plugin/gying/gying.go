@@ -1748,9 +1748,8 @@ func (p *GyingPlugin) solveBotChallenge(scraper *cloudscraper.Scraper, requestUR
 }
 
 func (p *GyingPlugin) requestWithChallengeRetry(scraper *cloudscraper.Scraper, method, requestURL, contentType, requestBody string) ([]byte, int, http.Header, error) {
-	client, err := getScraperClient(scraper)
-	if err != nil {
-		return nil, 0, nil, err
+	if scraper == nil {
+		return nil, 0, nil, fmt.Errorf("scraper 实例为空")
 	}
 
 	for attempt := 0; attempt < 2; attempt++ {
@@ -1761,11 +1760,7 @@ func (p *GyingPlugin) requestWithChallengeRetry(scraper *cloudscraper.Scraper, m
 
 		switch method {
 		case http.MethodGet:
-			var req *http.Request
-			req, err = http.NewRequest(http.MethodGet, requestURL, nil)
-			if err == nil {
-				resp, err = client.Do(req)
-			}
+			resp, err = scraper.Get(requestURL)
 		case http.MethodPost:
 			resp, err = scraper.Post(requestURL, contentType, strings.NewReader(requestBody))
 		default:
